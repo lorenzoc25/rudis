@@ -53,15 +53,9 @@ async fn process(socket: TcpStream, db: ShardedDb) {
 
     loop {
         let buff = connection.read_frame().await.unwrap();
-        let s = match str::from_utf8(&buff) {
-            Ok(v) => v,
-            Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-        };
-        println!("{}", s);
 
         let response: Bytes = match Command::from_bytes(&buff) {
             Command::Get(cmd) => {
-                println!("the command is {:?}, {}", cmd, cmd.key());
                 let idx = hash_key(cmd.key()) % db.len();
                 let db = db[idx].lock().unwrap();
 
@@ -73,7 +67,6 @@ async fn process(socket: TcpStream, db: ShardedDb) {
                 }
             }
             Command::Set(cmd) => {
-                println!("trying to set {:?} to {:?}", cmd.key(), cmd.val());
                 let idx: usize = hash_key(cmd.key()) % db.len();
                 let mut db = db[idx].lock().unwrap();
 

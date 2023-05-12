@@ -17,7 +17,6 @@ impl Connection {
     }
 
     pub async fn write_frame(&mut self, data: &[u8]) -> Result<()> {
-        println!("server got {:?}", std::str::from_utf8(data).unwrap());
         self.stream
             .write_all(&Connection::make_response(data))
             .await?;

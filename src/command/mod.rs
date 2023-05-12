@@ -24,7 +24,7 @@ impl Command {
         let req = parse_request(&buff, &mut headers).unwrap();
 
         let args = split_on_path(req.path.unwrap());
-        println!("{:?}", args);
+
         match args[0].to_uppercase().as_str() {
             "GET" => Command::Get(Get::from_key(args[1])),
             "SET" => Command::Set(Set::from_key_val(args[1], args[2])),
