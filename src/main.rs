@@ -1,4 +1,4 @@
-use rudis::server::Server;
+use rudis_http::server::Server;
 use std::env;
 use std::net::SocketAddr;
 
