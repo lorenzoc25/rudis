@@ -17,8 +17,21 @@ impl Connection {
     }
 
     pub async fn write_frame(&mut self, data: &[u8]) -> Result<()> {
-        println!("server got {:?}", data);
-        self.stream.write_all(data).await?;
+        println!("server got {:?}", std::str::from_utf8(data).unwrap());
+        self.stream
+            .write_all(&Connection::make_response(data))
+            .await?;
         Ok(())
+    }
+
+    fn make_response(data: &[u8]) -> Vec<u8> {
+        let mut response = Vec::new();
+        response.extend_from_slice(b"HTTP/1.1 200 OK\r\n");
+        response.extend_from_slice(b"Content-Type: text/plain\r\n");
+        response.extend_from_slice(b"Content-Length: ");
+        response.extend_from_slice(data.len().to_string().as_bytes());
+        response.extend_from_slice(b"\r\n\r\n");
+        response.extend_from_slice(data);
+        response
     }
 }

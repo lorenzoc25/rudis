@@ -1,6 +1,6 @@
+use crate::command::Command;
 use crate::connection::Connection;
 use bytes::Bytes;
-use httparse::{Request, Status};
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::net::SocketAddr;
@@ -49,8 +49,6 @@ fn hash_key(key: &str) -> usize {
 }
 
 async fn process(socket: TcpStream, db: ShardedDb) {
-    use crate::command::Command::{Get, Set};
-
     let mut connection = Connection::new(socket).await.unwrap();
 
     loop {
@@ -60,49 +58,35 @@ async fn process(socket: TcpStream, db: ShardedDb) {
             Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
         };
         println!("{}", s);
-        let mut headers: [httparse::Header; 16] = [httparse::EMPTY_HEADER; 16];
-        let req = parse_request(&buff, &mut headers).unwrap();
 
-        // for header in req.headers {
-        //     println!("{}: {}", header.name, String::from_utf8_lossy(header.value));
-        // }
-        // let response = match Command::from_frame(frame).unwrap() {
-        //     Set(cmd) => {
-        //         let key = cmd.key().to_string();
-        //         let idx = hash_key(&key) % db.len();
-        //         let mut db = db[idx].lock().unwrap();
+        let response: Bytes = match Command::from_bytes(&buff) {
+            Ok(Command::Get(cmd)) => {
+                println!("the command is {:?}, {}", cmd, cmd.key());
+                let idx = hash_key(cmd.key()) % db.len();
+                let db = db[idx].lock().unwrap();
 
-        //         db.insert(key, cmd.value().clone());
-        //         Frame::Simple("OK".to_string())
-        //     }
-        //     Get(cmd) => {
-        //         let key = cmd.key().to_string();
-        //         let idx = hash_key(&key) % db.len();
-        //         let db = db[idx].lock().unwrap();
-        //         if let Some(value) = db.get(cmd.key()) {
-        //             // `Frame::Bulk` expects data to be of type `Bytes`. This
-        //             // type will be covered later in the tutorial. For now,
-        //             // `&Vec<u8>` is converted to `Bytes` using `into()`.
-        //             Frame::Bulk(value.clone().into())
-        //         } else {
-        //             Frame::Null
-        //         }
-        //     }
-        //     cmd => panic!("unimplemented {:?}", cmd),
-        // };
-        let response = "hello world".as_bytes();
+                if let Some(value) = db.get(cmd.key()) {
+                    value.clone()
+                } else {
+                    Bytes::new()
+                }
+            }
+            Ok(Command::Set(cmd)) => {
+                println!("trying to set {:?} to {:?}", cmd.key(), cmd.val());
+                let idx = hash_key(cmd.key()) % db.len();
+                let mut db = db[idx].lock().unwrap();
+
+                db.insert(
+                    cmd.key().to_string(),
+                    Bytes::copy_from_slice(cmd.val().as_bytes()),
+                );
+
+                Bytes::copy_from_slice("SET OK".as_bytes())
+            }
+            Ok(Command::InvalidCommand) => Bytes::copy_from_slice("invalid command".as_bytes()),
+            Err(_) => Bytes::new(),
+        };
 
         connection.write_frame(&response).await.unwrap();
-    }
-}
-
-fn parse_request<'a>(
-    buff: &'a [u8],
-    headers: &'a mut [httparse::Header<'a>; 16],
-) -> Option<Request<'a, 'a>> {
-    let mut req = Request::new(headers);
-    match req.parse(buff) {
-        Ok(Status::Complete(_)) => Some(req),
-        _ => None,
     }
 }
