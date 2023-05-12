@@ -10,13 +10,13 @@ pub use set::Set;
 pub enum Command {
     Set(Set),
     Get(Get),
-    InvalidCommand,
+    Invalid,
 }
 
 impl Command {
-    pub fn from_bytes(buff: &[u8]) -> Result<Command, ()> {
+    pub fn from_bytes(buff: &[u8]) -> Command {
         if buff.len() == 0 {
-            return Err(());
+            return Command::Invalid;
         }
 
         let mut headers = [httparse::EMPTY_HEADER; 16];
@@ -26,9 +26,9 @@ impl Command {
         let args = split_on_path(req.path.unwrap());
         println!("{:?}", args);
         match args[0].to_uppercase().as_str() {
-            "GET" => Ok(Command::Get(Get::from_key(args[1]))),
-            "SET" => Ok(Command::Set(Set::from_key_val(args[1], args[2]))),
-            _ => Ok(Command::InvalidCommand),
+            "GET" => Command::Get(Get::from_key(args[1])),
+            "SET" => Command::Set(Set::from_key_val(args[1], args[2])),
+            _ => Command::Invalid,
         }
     }
 }

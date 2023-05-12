@@ -27,7 +27,7 @@ impl Connection {
     fn make_response(data: &[u8]) -> Vec<u8> {
         let mut response = Vec::new();
         response.extend_from_slice(b"HTTP/1.1 200 OK\r\n");
-        response.extend_from_slice(b"Content-Type: text/plain\r\n");
+        response.extend_from_slice(b"Content-Type: application/json\r\n");
         response.extend_from_slice(b"Content-Length: ");
         response.extend_from_slice(data.len().to_string().as_bytes());
         response.extend_from_slice(b"\r\n\r\n");

@@ -60,20 +60,21 @@ async fn process(socket: TcpStream, db: ShardedDb) {
         println!("{}", s);
 
         let response: Bytes = match Command::from_bytes(&buff) {
-            Ok(Command::Get(cmd)) => {
+            Command::Get(cmd) => {
                 println!("the command is {:?}, {}", cmd, cmd.key());
                 let idx = hash_key(cmd.key()) % db.len();
                 let db = db[idx].lock().unwrap();
 
                 if let Some(value) = db.get(cmd.key()) {
-                    value.clone()
+                    let value_string = std::str::from_utf8(&value).unwrap();
+                    Bytes::from(format!("{{\"{}\":\"{}\"}}", cmd.key(), value_string))
                 } else {
-                    Bytes::new()
+                    Bytes::copy_from_slice(b"{}")
                 }
             }
-            Ok(Command::Set(cmd)) => {
+            Command::Set(cmd) => {
                 println!("trying to set {:?} to {:?}", cmd.key(), cmd.val());
-                let idx = hash_key(cmd.key()) % db.len();
+                let idx: usize = hash_key(cmd.key()) % db.len();
                 let mut db = db[idx].lock().unwrap();
 
                 db.insert(
@@ -81,10 +82,9 @@ async fn process(socket: TcpStream, db: ShardedDb) {
                     Bytes::copy_from_slice(cmd.val().as_bytes()),
                 );
 
-                Bytes::copy_from_slice("SET OK".as_bytes())
+                Bytes::copy_from_slice(b"{\"SET\": \"OK\"}")
             }
-            Ok(Command::InvalidCommand) => Bytes::copy_from_slice("invalid command".as_bytes()),
-            Err(_) => Bytes::new(),
+            Command::Invalid => Bytes::copy_from_slice(b"invalid command"),
         };
 
         connection.write_frame(&response).await.unwrap();
