@@ -1,7 +1,15 @@
 [package]
 name = "rudis"
+description = "A minial HTTP Redis server"
 version = "0.1.0"
 edition = "2021"
+authors = ["Lorenzo Cao <lorenzocao25@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/lorenzoc25/rudis"
+license = "MIT"
+keywords = ["redis", "http", "server"]
+categories = ["database", "network-programming", "http", "server"]
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
