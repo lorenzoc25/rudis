@@ -10,13 +10,13 @@ impl Connection {
         Ok(Connection { stream })
     }
 
-    pub async fn read_frame(&mut self) -> Result<Vec<u8>> {
+    pub async fn read_stream(&mut self) -> Result<Vec<u8>> {
         let mut buf = [0u8; 1024];
         let n = self.stream.read(&mut buf).await?;
         Ok(buf[..n].to_vec())
     }
 
-    pub async fn write_frame(&mut self, data: &[u8]) -> Result<()> {
+    pub async fn write_stream(&mut self, data: &[u8]) -> Result<()> {
         self.stream
             .write_all(&Connection::make_response(data))
             .await?;

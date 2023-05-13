@@ -14,20 +14,29 @@ pub enum Command {
 }
 
 impl Command {
-    pub fn from_bytes(buff: &[u8]) -> Command {
-        if buff.len() == 0 {
+    pub fn from_bytes(http_request_buff: &[u8]) -> Command {
+        if http_request_buff.len() == 0 {
             return Command::Invalid;
         }
 
         let mut headers = [httparse::EMPTY_HEADER; 16];
-
-        let req = parse_request(&buff, &mut headers).unwrap();
+        let req = parse_request(&http_request_buff, &mut headers).unwrap();
 
         let args = split_on_path(req.path.unwrap());
 
         match args[0].to_uppercase().as_str() {
-            "GET" => Command::Get(Get::from_key(args[1])),
-            "SET" => Command::Set(Set::from_key_val(args[1], args[2])),
+            "GET" => {
+                if args.len() < 2 || args[1].is_empty() || args.len() > 2 {
+                    return Command::Get(Get::new_invalid());
+                }
+                Command::Get(Get::from_key(args[1]))
+            }
+            "SET" => {
+                if args.len() < 3 || args[1].is_empty() || args[2].is_empty() || args.len() > 3 {
+                    return Command::Set(Set::new_invalid());
+                }
+                Command::Set(Set::from_key_val(args[1], args[2]))
+            }
             _ => Command::Invalid,
         }
     }

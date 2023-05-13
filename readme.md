@@ -31,14 +31,23 @@ The response will be in json format. For a SET, you will be getting the status o
 ```
 $ curl 'localhost:6379/set/hello/world'
 {"SET": "OK"}
+
+// or if SET's arguments are not correct
+$ curl 'localhost:6379/set/hello'
+{"SET": "Invalid"}
 ```
 and for get, you will be getting the key value pair if there's a match, or an empty json object if there's no match
 ```
 $ curl 'localhost:6379/get/hello'     
 {"hello":"world"}
 
+// if key does not exist
 $ curl 'localhost:6379/GET/123'
 {}
+
+// if GET's arguments are not correct
+$ curl 'localhost:6379/GET'
+{"GET": "Invalid"}
 ```
 
 ## Todo
@@ -48,4 +57,5 @@ $ curl 'localhost:6379/GET/123'
 - general purpose client, and build http interface on top of that
 - .rdb file generation and backup
 - authentication
-
+### Finsihed Todos
+- cachepadded for mutex

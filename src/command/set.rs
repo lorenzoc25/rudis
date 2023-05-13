@@ -2,6 +2,7 @@
 pub struct Set {
     key: String,
     val: String,
+    valid: bool,
     // todo: TTL
 }
 
@@ -10,7 +11,20 @@ impl Set {
         Set {
             key: key.to_string(),
             val: value.to_string(),
+            valid: true,
         }
+    }
+
+    pub fn new_invalid() -> Self {
+        Set {
+            key: String::from(""),
+            val: String::from(""),
+            valid: false,
+        }
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.valid
     }
 
     pub fn key(&self) -> &str {
