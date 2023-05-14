@@ -5,10 +5,6 @@ This is a still work-in-progress project. The goal is to learn Rust and Tokio an
 
 ## Installation
 ```
-cargo add rudis-http
-```
-or 
-```
 cargo install rudis-http
 ```
 ## Usage
@@ -16,9 +12,12 @@ To run the server, simply run
 ```
 $ rudis-http
 ```
-or you can optionally specify the port
+or you can optionally specify the address, num shards (more to be added later)
 ```
-$ rudis-http <port>
+$ rudis-http -n <num_shards> -a <address_to_listen_on>
+
+// to view all commands, do
+$ rudis-http --help
 ```
 And the server will be listening on the port you specified or `127.0.0.1:6379` by default.
 
@@ -49,6 +48,7 @@ $ curl 'localhost:6379/GET/123'
 $ curl 'localhost:6379/GET'
 {"GET": "Invalid"}
 ```
+Any other types of commands will be responded with an empty json object
 
 ## Todo
 - support post request with json as arguments

@@ -86,7 +86,7 @@ async fn process(socket: TcpStream, db: ShardedDb) {
                     Bytes::copy_from_slice(b"{\"SET\": \"Invalid \"}")
                 }
             }
-            Command::Invalid => Bytes::copy_from_slice(b"invalid command"),
+            Command::Invalid => Bytes::copy_from_slice(b"{}"),
         };
 
         connection.write_stream(&response).await.unwrap();
