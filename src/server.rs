@@ -2,12 +2,12 @@ use crate::command::Command;
 use crate::connection::Connection;
 use bytes::Bytes;
 use crossbeam_utils::CachePadded;
+use monoio::net::{TcpListener, TcpStream};
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::net::SocketAddr;
 use std::str;
 use std::sync::{Arc, Mutex};
-use tokio::net::{TcpListener, TcpStream};
 
 type ShardedDb = Arc<Vec<CachePadded<Mutex<HashMap<String, Bytes>>>>>;
 
@@ -23,14 +23,21 @@ impl Server {
     }
 
     pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let listener = TcpListener::bind(self.addr).await?;
+        let listener = TcpListener::bind(self.addr).unwrap();
 
         loop {
-            let (socekt, _) = listener.accept().await?;
+            let incoming = listener.accept().await;
             let db = self.db.clone();
-            tokio::spawn(async move {
-                process(socekt, db).await;
-            });
+            match incoming {
+                Ok((socket, _)) => {
+                    monoio::spawn(async move {
+                        process(socket, db).await;
+                    });
+                }
+                Err(e) => {
+                    println!("Error accepting connection: {}", e);
+                }
+            }
         }
     }
 }
@@ -50,7 +57,7 @@ fn hash_key(key: &str) -> usize {
 }
 
 async fn process(socket: TcpStream, db: ShardedDb) {
-    let mut connection = Connection::new(socket).await.unwrap();
+    let mut connection = Connection::new(socket);
 
     loop {
         let buff = connection.read_stream().await.unwrap();
@@ -89,6 +96,6 @@ async fn process(socket: TcpStream, db: ShardedDb) {
             Command::Invalid => Bytes::copy_from_slice(b"{}"),
         };
 
-        connection.write_stream(&response).await.unwrap();
+        connection.write_stream((&response).to_vec()).await.unwrap();
     }
 }

@@ -1,7 +1,7 @@
-# (WIP) Rudis
+# Rudis (Experimental)
 A mini version of redis server that provides http interface implemented in Rust. The in-memorry kv-storage is sharded and concurrent safe. Inspired by [Tokio's tutorial](https://tokio.rs/tokio/tutorial) and [Webdis](https://github.com/nicolasff/webdis)
 
-This is a still work-in-progress project and is not meant to be used in production(yet). Only basic commands like GET and SET are supported. More commands will be added in the future.
+The experimental version leverages [monoio](https://github.com/bytedance/monoio)'s adaptive support on `io_uring/epoll/kqueue` to achieve high performance. If kernel is supporting io_uring, it will be used by default. Otherwise, epoll/kqueue will be used. *Rust Nighltly is required* if this version is used.
 
 ## Installation
 ```

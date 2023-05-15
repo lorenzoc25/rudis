@@ -19,3 +19,4 @@ bytes = "1"
 httparse = "1"
 crossbeam-utils = "0.8"
 clap = { version = "4.2.7", features = ["derive"] }
+monoio = "0.1.3"

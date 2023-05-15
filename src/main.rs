@@ -6,7 +6,7 @@ use std::net::SocketAddr;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Nunmber of shards to use for the database
+    /// Number of shards to use for the database
     #[arg(short, long, default_value_t = 16)]
     num_shards: usize,
 
@@ -15,7 +15,7 @@ struct Args {
     addr: String,
 }
 
-#[tokio::main]
+#[monoio::main(driver = "fusion")]
 async fn main() {
     let args = Args::parse();
     let addr = args.addr.parse::<SocketAddr>().unwrap();

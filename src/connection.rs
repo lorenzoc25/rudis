@@ -1,26 +1,31 @@
-use tokio::io::{AsyncReadExt, AsyncWriteExt, Result};
-use tokio::net::TcpStream;
+use monoio::io::{AsyncReadRent, AsyncWriteRentExt};
+use monoio::net::TcpStream;
+use std::io::Result;
 
 pub struct Connection {
     stream: TcpStream,
 }
 
 impl Connection {
-    pub async fn new(stream: TcpStream) -> Result<Connection> {
-        Ok(Connection { stream })
+    pub fn new(stream: TcpStream) -> Self {
+        Connection { stream }
     }
 
     pub async fn read_stream(&mut self) -> Result<Vec<u8>> {
-        let mut buf = [0u8; 1024];
-        let n = self.stream.read(&mut buf).await?;
-        Ok(buf[..n].to_vec())
+        let buf: Vec<u8> = Vec::with_capacity(8 * 1024);
+        let (_, buf) = self.stream.read(buf).await;
+        Ok(buf)
     }
 
-    pub async fn write_stream(&mut self, data: &[u8]) -> Result<()> {
-        self.stream
-            .write_all(&Connection::make_response(data))
-            .await?;
-        Ok(())
+    pub async fn write_stream(&mut self, data: Vec<u8>) -> Result<()> {
+        match self
+            .stream
+            .write_all(Connection::make_response(&data))
+            .await
+        {
+            (Ok(_), _) => Ok(()),
+            (Err(e), _) => Err(e),
+        }
     }
 
     fn make_response(data: &[u8]) -> Vec<u8> {
