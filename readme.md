@@ -3,6 +3,8 @@ A mini version of redis server that provides http interface implemented in Rust.
 
 This is a still work-in-progress project and is not meant to be used in production(yet). Only basic commands like GET and SET are supported. More commands will be added in the future.
 
+There is also the [Experimental Version](https://github.com/lorenzoc25/rudis/tree/experimental) which adapatively uses `io_uring` on supported kernels. If kernel does not support `io_uring`, it will fall back to using `epoll/kqueue`. This version is not published to the crates and therefore needs to be cloned and built locally. It requires **nightly rust compiler** to be built.
+
 ## Installation
 ```
 cargo install rudis-http
