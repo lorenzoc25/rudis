@@ -1,7 +1,7 @@
 [package]
 name = "rudis-http"
-description = "A minial HTTP Redis server"
-version = "0.1.2"
+description = "A minial Redis server with HTTP interface"
+version = "0.1.3"
 edition = "2021"
 authors = ["Lorenzo Cao <lorenzocao25@gmail.com>"]
 readme = "README.md"
@@ -19,3 +19,4 @@ bytes = "1"
 httparse = "1"
 crossbeam-utils = "0.8"
 clap = { version = "4.2.7", features = ["derive"] }
+serde_json = "1.0.96"
