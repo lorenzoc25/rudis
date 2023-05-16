@@ -1,3 +1,5 @@
+use serde_json::{Map, Value};
+
 #[derive(Debug)]
 pub struct Set {
     key: String,
@@ -33,5 +35,34 @@ impl Set {
 
     pub fn val(&self) -> &str {
         &self.val
+    }
+}
+
+pub struct MultipleSet {
+    kv: Map<String, Value>,
+    valid: bool,
+}
+
+impl MultipleSet {
+    pub fn from_json_kv(obj: Map<String, Value>) -> Option<Self> {
+        Some(MultipleSet {
+            kv: obj,
+            valid: true,
+        })
+    }
+
+    pub fn new_invalid() -> Self {
+        MultipleSet {
+            kv: Map::new(),
+            valid: false,
+        }
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.valid
+    }
+
+    pub fn kv(&self) -> &Map<String, Value> {
+        &self.kv
     }
 }

@@ -4,13 +4,13 @@ pub use get::Get;
 
 mod set;
 use httparse::Request;
-use serde_json::{Result, Value};
-pub use set::Set;
+use serde_json::{Map, Result, Value};
+pub use set::{MultipleSet, Set};
 
-#[derive(Debug)]
 pub enum Command {
     Set(Set),
     Get(Get),
+    MultipleSet(MultipleSet),
     Invalid,
 }
 
@@ -20,6 +20,7 @@ struct Args {
     command: String,
     key: String,
     val: Option<String>,
+    kv: Option<Map<String, Value>>,
 }
 
 impl Args {
@@ -29,6 +30,7 @@ impl Args {
             command: String::from(command_type),
             key: String::from(""),
             val: None,
+            kv: None,
         }
     }
 }
@@ -59,6 +61,17 @@ impl Command {
                 }
                 Command::Set(Set::from_key_val(arg.key, arg.val.unwrap()))
             }
+            "MULTIPLE_SET" => {
+                if arg.valid == false {
+                    return Command::MultipleSet(MultipleSet::new_invalid());
+                }
+                let json_kv = arg.kv.unwrap();
+                if let Some(arg) = MultipleSet::from_json_kv(json_kv) {
+                    return Command::MultipleSet(arg);
+                } else {
+                    return Command::MultipleSet(MultipleSet::new_invalid());
+                }
+            }
             _ => Command::Invalid,
         }
     }
@@ -82,6 +95,7 @@ fn make_args(req: &Request, request_buff: &[u8], idx_of_body: usize) -> Args {
                     command: String::from("GET"),
                     key: String::from(key),
                     val: None,
+                    kv: None,
                 };
             }
             "SET" => {
@@ -99,6 +113,7 @@ fn make_args(req: &Request, request_buff: &[u8], idx_of_body: usize) -> Args {
                     command: String::from("SET"),
                     key: String::from(key),
                     val: Some(String::from(val)),
+                    kv: None,
                 };
             }
             _ => return Args::new_invalid("INVALID"),
@@ -112,15 +127,13 @@ fn make_args(req: &Request, request_buff: &[u8], idx_of_body: usize) -> Args {
         match parse_json(&body) {
             Ok(value) => {
                 if let Some(obj) = value.as_object() {
-                    // if multiple kv pairs are passed, only the first one is used  for now
-                    if let Some((key, value)) = obj.iter().next() {
-                        return Args {
-                            valid: true,
-                            command: String::from("SET"),
-                            key: key.to_string(),
-                            val: Some(value.as_str().unwrap().to_string()),
-                        };
-                    }
+                    return Args {
+                        valid: true,
+                        command: String::from("MULTIPLE_SET"),
+                        key: String::from(""),
+                        val: None,
+                        kv: Some(obj.clone()),
+                    };
                 }
                 return Args::new_invalid("SET");
             }

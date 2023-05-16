@@ -37,13 +37,16 @@ $ curl 'localhost:6379/set/hello/world'
 $ curl 'localhost:6379/set/hello'
 {"SET": "Invalid"}
 ```
-You can also send a POST request with json as key value pair to support a SET command. (Only single kv pair is supported for now, and if there's more than one kv pair, only the first one will be used)
+You can also send a POST request with json as key value pair to support a SET command. 
 ```sh
 $ curl -X POST 'localhost:6379/set' -d '{"hello":"world"}'
 {"SET": "OK"}
 
 $ curl -X POST 'localhost:6379/set' -d '{}'
-{"SET": "Invalidc"}
+{"SET": "Invalid"}
+# for multiple kv pairs
+$ curl -X POST 'localhost:6379/set' -d '{"hello":"world", "foo":"bar"}'
+{"SET": "OK}
 ```
 and for get, you will be getting the key value pair if there's a match, or an empty json object if there's no match
 ```sh
@@ -61,7 +64,6 @@ $ curl 'localhost:6379/GET'
 Any other types of commands will be responded with an empty json object
 
 ## Todo
-- support post request with json as arguments (multiple kv pairs)
 - more cli options
 - set argument's TTL
 - general purpose client, and build http interface on top of that
@@ -69,4 +71,4 @@ Any other types of commands will be responded with an empty json object
 - authentication
 ### Finsihed Todos
 - cachepadded for mutex
-- support post request with json as arguments (single kv)
+- support post request with json as arguments 

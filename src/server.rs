@@ -57,9 +57,7 @@ async fn process(socket: TcpStream, db: ShardedDb) {
 
         let response: Bytes = match Command::from_bytes(&buff) {
             Command::Get(cmd) => {
-                if !cmd.is_valid() {
-                    Bytes::copy_from_slice(b"{\"GET\": \"Invalid \"}")
-                } else {
+                if cmd.is_valid() {
                     let idx = hash_key(cmd.key()) % db.len();
                     let db = db[idx].lock().unwrap();
 
@@ -69,6 +67,8 @@ async fn process(socket: TcpStream, db: ShardedDb) {
                     } else {
                         Bytes::copy_from_slice(b"{}")
                     }
+                } else {
+                    Bytes::copy_from_slice(b"{\"GET\": \"Invalid \"}")
                 }
             }
             Command::Set(cmd) => {
@@ -81,6 +81,22 @@ async fn process(socket: TcpStream, db: ShardedDb) {
                         Bytes::copy_from_slice(cmd.val().as_bytes()),
                     );
 
+                    Bytes::copy_from_slice(b"{\"SET\": \"OK\"}")
+                } else {
+                    Bytes::copy_from_slice(b"{\"SET\": \"Invalid \"}")
+                }
+            }
+            Command::MultipleSet(cmd) => {
+                if cmd.is_valid() {
+                    for (key, val) in cmd.kv().iter() {
+                        let idx: usize = hash_key(key) % db.len();
+                        let mut db = db[idx].lock().unwrap();
+
+                        db.insert(
+                            key.to_string(),
+                            Bytes::copy_from_slice(val.as_str().unwrap().to_string().as_bytes()),
+                        );
+                    }
                     Bytes::copy_from_slice(b"{\"SET\": \"OK\"}")
                 } else {
                     Bytes::copy_from_slice(b"{\"SET\": \"Invalid \"}")
