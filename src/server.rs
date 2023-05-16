@@ -50,10 +50,20 @@ fn hash_key(key: &str) -> usize {
 }
 
 async fn process(socket: TcpStream, db: ShardedDb) {
-    let mut connection = Connection::new(socket).await.unwrap();
+    let mut connection = match Connection::new(socket).await {
+        Ok(connection) => connection,
+        Err(_e) => {
+            return;
+        }
+    };
 
     loop {
-        let buff = connection.read_stream().await.unwrap();
+        let buff = match connection.read_stream().await {
+            Ok(buff) => buff,
+            Err(_e) => {
+                return;
+            }
+        };
 
         let response: Bytes = match Command::from_bytes(&buff) {
             Command::Get(cmd) => {
@@ -105,6 +115,9 @@ async fn process(socket: TcpStream, db: ShardedDb) {
             Command::Invalid => Bytes::copy_from_slice(b"{}"),
         };
 
-        connection.write_stream(&response).await.unwrap();
+        if let Err(e) = connection.write_stream(&response).await {
+            println!("write stream error: {e}");
+            return;
+        }
     }
 }
