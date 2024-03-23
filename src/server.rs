@@ -72,7 +72,7 @@ async fn process(socket: TcpStream, db: ShardedDb) {
                     let db = db[idx].lock().unwrap();
 
                     if let Some(value) = db.get(cmd.key()) {
-                        let value_string = std::str::from_utf8(&value).unwrap();
+                        let value_string = std::str::from_utf8(value).unwrap();
                         Bytes::from(format!("{{\"{}\":\"{}\"}}", cmd.key(), value_string))
                     } else {
                         Bytes::copy_from_slice(b"{}")

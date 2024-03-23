@@ -39,7 +39,7 @@ fn from_bytes_set() {
 #[test]
 fn from_bytes_set_invalid() {
     match Command::from_bytes(&generate_buff("/set/foo")) {
-        Command::Set(cmd) => assert_eq!(cmd.is_valid(), false),
+        Command::Set(cmd) => assert!(!cmd.is_valid()),
         _ => assert!(false),
     }
 }
@@ -47,7 +47,7 @@ fn from_bytes_set_invalid() {
 #[test]
 fn from_bytes_get_invalid() {
     match Command::from_bytes(&generate_buff("/get")) {
-        Command::Get(cmd) => assert_eq!(cmd.is_valid(), false),
+        Command::Get(cmd) => assert!(!cmd.is_valid()),
         _ => assert!(false),
     }
 }

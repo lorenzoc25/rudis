@@ -37,7 +37,7 @@ impl Args {
 
 impl Command {
     pub fn from_bytes(http_request_buff: &[u8]) -> Command {
-        if http_request_buff.len() == 0 {
+        if http_request_buff.is_empty() {
             return Command::Invalid;
         }
 
@@ -50,26 +50,26 @@ impl Command {
 
         match arg.command.as_str() {
             "GET" => {
-                if arg.valid == false {
+                if !arg.valid {
                     return Command::Get(Get::new_invalid());
                 }
                 Command::Get(Get::from_key(arg.key))
             }
             "SET" => {
-                if arg.valid == false {
+                if !arg.valid {
                     return Command::Set(Set::new_invalid());
                 }
                 Command::Set(Set::from_key_val(arg.key, arg.val.unwrap()))
             }
             "MULTIPLE_SET" => {
-                if arg.valid == false {
+                if !arg.valid {
                     return Command::MultipleSet(MultipleSet::new_invalid());
                 }
                 let json_kv = arg.kv.unwrap();
                 if let Some(arg) = MultipleSet::from_json_kv(json_kv) {
-                    return Command::MultipleSet(arg);
+                    Command::MultipleSet(arg)
                 } else {
-                    return Command::MultipleSet(MultipleSet::new_invalid());
+                    Command::MultipleSet(MultipleSet::new_invalid())
                 }
             }
             _ => Command::Invalid,
@@ -144,7 +144,7 @@ fn make_args(req: &Request, request_buff: &[u8], idx_of_body: usize) -> Args {
 }
 
 fn split_on_path(input: &str) -> Vec<&str> {
-    let all: Vec<&str> = input.split("/").collect();
+    let all: Vec<&str> = input.split('/').collect();
     if let Some((_, rest)) = all.split_first() {
         return rest.to_vec();
     }
