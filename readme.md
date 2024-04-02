@@ -69,6 +69,6 @@ Any other types of commands will be responded with an empty json object
 - general purpose client, and build http interface on top of that
 - .rdb file generation and backup
 - authentication
-### Finsihed Todos
+### Finished Todos
 - cachepadded for mutex
 - support post request with json as arguments 
