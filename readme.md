@@ -63,12 +63,5 @@ $ curl 'localhost:6379/GET'
 ```
 Any other types of commands will be responded with an empty json object
 
-## Todo
-- more cli options
-- set argument's TTL
-- general purpose client, and build http interface on top of that
-- .rdb file generation and backup
-- authentication
-### Finished Todos
-- cachepadded for mutex
-- support post request with json as arguments 
+## Contribute
+Refer to the issues section to see what are the current roadmap / TODO for this project. Be sure to follow Github's [Code of Conduct](https://docs.github.com/en/site-policy/github-terms/github-community-code-of-conduct) and thanks for your contribution!
